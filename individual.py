@@ -1,10 +1,15 @@
 import numpy as np 
-import pandas as pd 
+#import pandas as pd 
 rd = np.random
 
 class Individual:
-    def __init__(self, code, par=None, generation=0, parents=None, sons=None):
-        self.code = code
+    """
+    Individual(par, generation, parents, sons)
+    
+    
+    """
+    def __init__(self, par=None, generation=0, parents=[], sons=[]):
+        self.code = id(self)
         self.par = par
         self.generation = generation
         self.parents = parents
@@ -22,15 +27,25 @@ class Individual:
         dna3 = []
         dna4 = []
 
-        #nodes = [(i+1)*int(len(dna1)/mash) for i in range(mash)]
+        #nodes = [int((i+1)*len(dna1)/mash) for i in range(mash)]
         #for n, node in enumerate(nodes):
         #    if n % 0 == 0:
         #        dna3.extend(dna1[])
 
         node = [3,7]
 
-        dna3.extend( dna1[:node[0]] + dna2[node[0]:node[1]] + dna1[node[1]:] )
-        dna4.extend( dna2[:node[0]] + dna1[node[0]:node[1]] + dna2[node[1]:] )
+        dna3 = dna1[:node[0]] + dna2[node[0]:node[1]] + dna1[node[1]:]
+        dna4 = dna2[:node[0]] + dna1[node[0]:node[1]] + dna2[node[1]:]
+
+        s1 = Individual(dna3, other.generation+1, [self, other])
+        s2 = Individual(dna4, other.generation+1, [self, other])
+
+        self.sons = [s1, s2]
+        other.sons = [s1, s2]
 
         if not auto_add:
-            return dna3, dna4
+            return self.sons
+        else:
+            raise EnvironmentError('Feature not implemented yet')
+    
+

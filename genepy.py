@@ -1,8 +1,10 @@
-import numpy as np 
-#import pandas as pd 
+import numpy as np
+# import pandas as pd
 rd = np.random
 
+
 class Individual:
+
     def __init__(self, par=None, generation=0, parents=[], sons=[]):
         self.code = id(self)
         self.par = par
@@ -12,28 +14,28 @@ class Individual:
 
         if not self.par:
             self.par = [rd.random() for i in range(10)]
-    
 
     def breed(self, other, mutation_rate, mash=3, auto_add=False):
-        
         dna1 = self.par
         dna2 = other.par
 
         dna3 = []
         dna4 = []
 
-        #nodes = [int((i+1)*len(dna1)/mash) for i in range(mash)]
-        #for n, node in enumerate(nodes):
+        # nodes = [int((i+1)*len(dna1)/mash) for i in range(mash)]
+        # for n, node in enumerate(nodes):
         #    if n % 0 == 0:
         #        dna3.extend(dna1[])
 
-        node = [3,7]
+        node = [3, 7]
 
         dna3 = dna1[:node[0]] + dna2[node[0]:node[1]] + dna1[node[1]:]
         dna4 = dna2[:node[0]] + dna1[node[0]:node[1]] + dna2[node[1]:]
 
-        s1 = Individual(dna3, max([self.generation, other.generation])+1, [self, other])
-        s2 = Individual(dna4, max([self.generation, other.generation])+1, [self, other])
+        s1 = Individual(
+            dna3, max([self.generation, other.generation])+1, [self, other])
+        s2 = Individual(
+            dna4, max([self.generation, other.generation])+1, [self, other])
 
         s1.mutate(mutation_rate)
         s2.mutate(mutation_rate)
@@ -45,26 +47,43 @@ class Individual:
             return self.sons
         else:
             raise EnvironmentError('Feature not implemented yet')
-    
 
     def mutate(self, chance):
         if chance > 1:
             chance = chance/100
-        
-        
+
         for n, i in enumerate(self.par):
-            if rd.rand() < chance:    
+            if rd.rand() < chance:
                 i = rd.rand()
                 self.par[n] = i
-        
+
         return
 
-        #self.par = [rd.random() for i in self.par if rd.random()<chance]
-            
-        
+        # self.par = [rd.random() for i in self.par if rd.random()<chance]
 
 
 class Environment:
     def __init__(self, start_population=[]):
         self.start_population = start_population
         self.curr_pop = start_population
+
+    def preasure(self, individual, feature):
+        res = 0
+        for n in range(len(feature)):
+            res += (feature[n] - individual.par[n])**2
+
+        individual.score = res
+        return
+
+    def evolve(self, feature=[1, 1, 1, 1, 1, 1, 1, 1, 1, 1]):
+        for individual in self.curr_pop:
+            self.preasure(individual, feature)
+
+        k = list(map(lambda x: x.score for x in self.curr_pop))
+        k = [i/sum(k) for i in k]
+        new_gen = rd.choice(self.curr_pop, size=int(len(self.curr_pop)/2),
+                            replace=False, p=k)
+
+        self.curr_pop = new_gen
+
+        return self.curr_pop

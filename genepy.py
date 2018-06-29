@@ -4,8 +4,8 @@ rd = np.random
 
 
 class Individual:
-
     def __init__(self, par=None, generation=0, parents=[], sons=[]):
+
         self.code = id(self)
         self.par = par
         self.generation = generation
@@ -13,7 +13,7 @@ class Individual:
         self.sons = sons
 
         if not self.par:
-            self.par = [rd.random() for i in range(10)]
+            self.par = list(rd.rand(10))
 
     def breed(self, other, mutation_rate, mash=3, auto_add=False):
         dna1 = self.par
@@ -67,7 +67,7 @@ class Environment:
         self.start_population = start_population
         self.curr_pop = start_population
 
-    def preasure(self, individual, feature):
+    def preasure(self, individual, feature=[1, 1, 1, 1, 1, 1, 1, 1, 1, 1]):
         res = 0
         for n in range(len(feature)):
             res += (feature[n] - individual.par[n])**2
@@ -75,7 +75,7 @@ class Environment:
         individual.score = res
         return
 
-    def evolve(self, feature=[1, 1, 1, 1, 1, 1, 1, 1, 1, 1]):
+    def evolve(self, feature=[1, 1, 1, 1, 1, 1, 1, 1, 1, 1], mutate=True):
         for individual in self.curr_pop:
             self.preasure(individual, feature)
 
@@ -84,6 +84,22 @@ class Environment:
         new_gen = rd.choice(self.curr_pop, size=int(len(self.curr_pop)/2),
                             replace=False, p=k)
 
-        self.curr_pop = new_gen
+        if not mutate:
+            self.curr_pop = new_gen
+            return self.curr_pop
+        else:
+            self.curr_pop = []
+            while len(self.curr_pop) < len(self.start_population):
+                k = list(map(lambda x: x.score for x in new_gen))
+                k = [i/sum(k) for i in k]
 
-        return self.curr_pop
+                pair = rd.choice(new_gen, size=2, replace=False, p=k)
+                puppy = pair[0].breed(pair[1], mutate)
+                self.curr_pop.append(puppy)
+            return self.curr_pop
+
+    def gen_population(self, n):
+        self.start_population = []
+        for j in range(n):
+            j = Individual()
+            self.start_population.append(j)

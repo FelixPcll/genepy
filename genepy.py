@@ -70,7 +70,7 @@ class Environment:
     def preasure(self, individual, feature=[1, 1, 1, 1, 1, 1, 1, 1, 1, 1]):
         res = 0
         for n in range(len(feature)):
-            res += (feature[n] - individual.par[n])**2
+            res += 1-(feature[n] - individual.par[n])**2
 
         individual.score = res
         return
@@ -100,6 +100,8 @@ class Environment:
 
     def gen_population(self, n):
         self.start_population = []
+        self.curr_pop = []
         for j in range(n):
             j = Individual()
             self.start_population.append(j)
+        self.curr_pop.extend(self.start_population)

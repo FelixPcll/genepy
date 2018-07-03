@@ -40,19 +40,32 @@ def test_Environment_preasure(n):
         for j in i.par:
             right += 1-(1-j)**2
 
-        print('DNA -> {}\nSCORE -> {} || Right -> {}'.format(i.par,
-                                                             i.score, right))
+        print('DNA -> {}\nSCORE -> {} || Right -> {}\n'.format(i.par,
+                                                               i.score, right))
 
 
-def test_Environment_evolve(n, t):
+def test_Environment_evolve(n, m, t):
     E = gp.Environment()
     E.gen_population(n)
-    for i in range(t):
-        E.evolve()
-        pop = [j.par for j in E.curr_pop]
-        scr = [j.score for j in E.curr_pop]
 
-        print('{} -> {} || {}'.format(i, pop, max(scr)))
+    for _ in range(t):
+        E.evolve(keep=2, mutate=m)
+
+    ipop = []
+    ipop.extend(E.start_population)
+
+    fpop = []
+    fpop.extend(E.curr_pop)
+
+    print("""\n\n
+             Start Pop: {}\n
+             Start Score: {}\n
+             \n
+             Final Pop: {}\n
+             Final Score {}""".format(len(list(map(lambda x: x.par, ipop))),
+                                      max(list(map(lambda x: x.score, ipop))),
+                                      len(list(map(lambda x: x.par, fpop))),
+                                      max(list(map(lambda x: x.score, fpop)))))
 
 
-test_Environment_evolve(6, 9)
+test_Environment_evolve(n=20, m=0.2, t=200)

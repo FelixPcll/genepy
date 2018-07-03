@@ -11,6 +11,7 @@ class Individual:
         self.generation = generation
         self.parents = parents
         self.sons = sons
+        self.score = 0
 
         if not self.par:
             self.par = list(rd.rand(10))
@@ -32,10 +33,10 @@ class Individual:
         dna3 = dna1[:node[0]] + dna2[node[0]:node[1]] + dna1[node[1]:]
         dna4 = dna2[:node[0]] + dna1[node[0]:node[1]] + dna2[node[1]:]
 
-        s1 = Individual(
-            dna3, max([self.generation, other.generation])+1, [self, other])
-        s2 = Individual(
-            dna4, max([self.generation, other.generation])+1, [self, other])
+        s1 = Individual(par=dna3, parents=[self, other],
+                        generation=max([self.generation, other.generation])+1)
+        s2 = Individual(par=dna4, parents=[self, other],
+                        generation=max([self.generation, other.generation])+1)
 
         s1.mutate(mutation_rate)
         s2.mutate(mutation_rate)
@@ -69,34 +70,40 @@ class Environment:
 
     def preasure(self, individual, feature=[1, 1, 1, 1, 1, 1, 1, 1, 1, 1]):
         res = 0
-        for n in range(len(feature)):
-            res += 1-(feature[n] - individual.par[n])**2
+        for n, f in enumerate(feature):
+            res += (1-(f - individual.par[n])**2)
 
         individual.score = res
         return
 
-    def evolve(self, feature=[1, 1, 1, 1, 1, 1, 1, 1, 1, 1], mutate=True):
-        for individual in self.curr_pop:
-            self.preasure(individual, feature)
+    def evolve(self, keep=2, feature=[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+               mutate=True):
+        for ind in self.curr_pop:
+            self.preasure(ind, feature=feature)
 
-        k = list(map(lambda x: x.score for x in self.curr_pop))
-        k = [i/sum(k) for i in k]
-        new_gen = rd.choice(self.curr_pop, size=int(len(self.curr_pop)/2),
+        lt = list(map(lambda x: x.score, self.curr_pop))
+        k = [i/sum(lt) for i in lt]
+
+        new_gen = rd.choice(self.curr_pop, size=keep,
                             replace=False, p=k)
 
         if not mutate:
-            self.curr_pop = new_gen
+            self.curr_pop = []
+            self.curr_pop.extend(new_gen)
             return self.curr_pop
         else:
             self.curr_pop = []
+            self.curr_pop.extend(new_gen)
             while len(self.curr_pop) < len(self.start_population):
-                k = list(map(lambda x: x.score for x in new_gen))
+                k = list(map(lambda x: x.score, self.curr_pop))
                 k = [i/sum(k) for i in k]
 
-                pair = rd.choice(new_gen, size=2, replace=False, p=k)
-                puppy = pair[0].breed(pair[1], mutate)
-                self.curr_pop.append(puppy)
-            return self.curr_pop
+                pair = rd.choice(self.curr_pop, size=2, replace=False, p=k)
+                puppy = pair[0].breed(pair[1], mutation_rate=mutate)
+                for p in puppy:
+                    self.preasure(p, feature=feature)
+                self.curr_pop.extend(puppy)
+            return
 
     def gen_population(self, n):
         self.start_population = []

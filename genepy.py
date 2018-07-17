@@ -22,11 +22,17 @@ class Individual:
 
         dna3 = []
         dna4 = []
+        # nodes = [int((i+1)*len(dna1)/mash) for i in range(mash)][:-1]
 
-        # nodes = [int((i+1)*len(dna1)/mash) for i in range(mash)]
         # for n, node in enumerate(nodes):
-        #    if n % 0 == 0:
-        #        dna3.extend(dna1[])
+        #    if n % 2 == 0:
+        #        f1 = dna1
+        #        f2 = dna2
+        #    elif n % 2 == 1:
+        #        f1 = dna2
+        #        f2 = dna1
+        #
+        #    for b in range(len(dna1)):
 
         node = [3, 7]
 
@@ -50,13 +56,9 @@ class Individual:
             raise EnvironmentError('Feature not implemented yet')
 
     def mutate(self, chance):
-        if chance > 1:
-            chance = chance/100
-
-        for n, i in enumerate(self.par):
+        for n, _ in enumerate(self.par):
             if rd.rand() < chance:
-                i = rd.rand()
-                self.par[n] = i
+                self.par[n] = rd.rand()
 
         return
 
@@ -81,8 +83,8 @@ class Environment:
         for ind in self.curr_pop:
             self.preasure(ind, feature=feature)
 
-        lt = list(map(lambda x: x.score, self.curr_pop))
-        k = [i/sum(lt) for i in lt]
+        k = list(map(lambda x: x.score, self.curr_pop))
+        k = [i/sum(k) for i in k]
 
         new_gen = rd.choice(self.curr_pop, size=keep,
                             replace=False, p=k)
@@ -93,7 +95,22 @@ class Environment:
             return self.curr_pop
         else:
             self.curr_pop = []
+            new_gen = list(new_gen)
             self.curr_pop.extend(new_gen)
+            while len(new_gen) > 1:
+                k = list(map(lambda x: x.score, new_gen))
+                k = [i/sum(k) for i in k]
+
+                pair = rd.choice(new_gen, size=2, replace=False, p=k)
+                puppy = pair[0].breed(pair[1], mutation_rate=mutate)
+                for p in puppy:
+                    self.preasure(p, feature=feature)
+                self.curr_pop.extend(puppy)
+                for i in pair:
+                    new_gen.remove(i)
+            if len(new_gen) == 1:
+                self.curr_pop.extend(new_gen)
+
             while len(self.curr_pop) < len(self.start_population):
                 k = list(map(lambda x: x.score, self.curr_pop))
                 k = [i/sum(k) for i in k]

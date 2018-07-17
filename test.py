@@ -1,4 +1,6 @@
 import genepy as gp
+import numpy as np
+import matplotlib.pyplot as plt
 
 print('\n'+'-+'*84+'-'+'\n')
 
@@ -34,6 +36,8 @@ def test_Environment_gen_population(n):
 def test_Environment_preasure(n):
     forest = gp.Environment()
     forest.gen_population(n)
+    perfect = gp.Individual(par=[1 for _ in range(10)])
+    forest.curr_pop.append(perfect)
     for i in forest.curr_pop:
         forest.preasure(i)
         right = 0
@@ -44,12 +48,16 @@ def test_Environment_preasure(n):
                                                                i.score, right))
 
 
-def test_Environment_evolve(n, m, t):
+def test_Environment_evolve(n, k, m, t):
     E = gp.Environment()
     E.gen_population(n)
 
+    df = []
     for _ in range(t):
-        E.evolve(keep=2, mutate=m)
+        E.evolve(keep=k, mutate=m)
+
+        now = np.array(list(map(lambda x: x.score, E.curr_pop)))
+        df.append(now.mean())
 
     ipop = []
     ipop.extend(E.start_population)
@@ -67,5 +75,10 @@ def test_Environment_evolve(n, m, t):
                                       len(list(map(lambda x: x.par, fpop))),
                                       max(list(map(lambda x: x.score, fpop)))))
 
+    return df
 
-test_Environment_evolve(n=20, m=0.2, t=200)
+
+df = test_Environment_evolve(n=100, k=30, m=0.10, t=100)
+
+plt.plot(df)
+plt.show()
